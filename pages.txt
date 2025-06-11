@@ -7,3 +7,5 @@ https://www.cbx.org.br/jogador/92187
 # chess pages - Marcus Jardim
 https://ratings.fide.com/profile/538027038
 https://www.cbx.org.br/jogador/95665
+# chess-results pages
+https://chess-results.com/tnr1186775.aspx;chess-results.com

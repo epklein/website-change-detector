@@ -9,13 +9,18 @@ PAGES_FILE = "pages.txt"
 CHECKSUM_FILE = "checksum.csv"
 
 def load_urls(filename):
+    urls = []
     with open(filename, "r") as f:
-        return [
-            line.strip()
-            for line in f
-            # lines starting with '#' are considered comments
-            if line.strip() and not line.strip().startswith("#")
-        ]
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if ";" in line:
+                url, ignore_file = line.split(";", 1)
+                urls.append((url.strip(), ignore_file.strip()))
+            else:
+                urls.append((line, None))
+    return urls
 
 def load_checksums(filename):
     checksums = {}
@@ -47,6 +52,20 @@ def clean_html(html):
     html = re.sub(rb'\s+', b' ', html)
     return html.strip()
 
+def remove_ignore_patterns(content, ignore_file):
+    if not ignore_file:
+        return content
+    ignore_path = os.path.join("ignore", ignore_file)
+    if not os.path.exists(ignore_path):
+        return content
+    with open(ignore_path, "r") as f:
+        for pattern in f:
+            pattern = pattern.strip()
+            if not pattern or pattern.startswith("#"):
+                continue
+            content = re.sub(pattern.encode(), b'', content)
+    return content
+
 def get_checksum(content):
     return hashlib.sha256(content).hexdigest()
 
@@ -56,11 +75,12 @@ def main():
     new_checksums = {} 
     changed_urls = []
 
-    for url in urls:
+    for url, ignore_file in urls:
         try:
             resp = requests.get(url, timeout=10)
             resp.raise_for_status()
             cleaned = clean_html(resp.content)
+            cleaned = remove_ignore_patterns(cleaned, ignore_file)
             checksum = get_checksum(cleaned)
             old_checksum, old_date = old_checksums.get(url, (None, None))
             if old_checksum != checksum:
