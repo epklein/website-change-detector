@@ -70,10 +70,13 @@ def remove_ignore_patterns(content, ignore_file):
 def get_checksum(content):
     return hashlib.sha256(content).hexdigest()
 
-def save_snapshot(new_checksum, content, old_checksum, url):
+def save_snapshot(new_checksum, cleaned_content, old_checksum, original_content, url):
     snapshot_path = os.path.join("snapshots", f"{new_checksum}.html")
     with open(snapshot_path, "wb") as f:
-        f.write(content)
+        f.write(cleaned_content)
+    snapshot_path = os.path.join("snapshots", f"{new_checksum}.orig.html")
+    with open(snapshot_path, "wb") as f:
+        f.write(original_content)
     # Log the change
     log_path = os.path.join("snapshots", "snapshots.log")
     with open(log_path, "a") as log_file:
@@ -100,7 +103,7 @@ def main():
                 date = datetime.now().isoformat()
                 changed_urls.append((url, date))
                 if SAVE_SNAPSHOT:
-                    save_snapshot(checksum, cleaned_content, old_checksum, url)
+                    save_snapshot(checksum, cleaned_content, old_checksum, resp.content, url)
             else:
                 date = old_date
             new_checksums[url] = (checksum, date)

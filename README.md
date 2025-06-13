@@ -34,8 +34,7 @@ This Python script checks whether a list of URLs have changed since the last sna
 
 4. **View results**  
    - Changed URLs will be printed to the console.
-   - The script updates `checksum.csv` with the latest checksums and change dates.
-   - For each detected change, a cleaned HTML snapshot is saved in the `snapshots/` directory, named by its checksum. A log of changes is kept in `snapshots/snapshots.log`.
+   - A log of changes is kept in `snapshots/snapshots.log`.
 
 ## How it works
 

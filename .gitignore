@@ -1,0 +1,5 @@
+# Ignore checksum file
+checksum.csv
+
+# Ignore snapshots directory
+snapshots/
