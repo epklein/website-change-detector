@@ -5,6 +5,7 @@ import os
 import re
 from datetime import datetime
 
+SAVE_SNAPSHOT = True  # Set to False if you don't want to save snapshots
 PAGES_FILE = "pages.txt"
 CHECKSUM_FILE = "checksum.csv"
 
@@ -69,24 +70,37 @@ def remove_ignore_patterns(content, ignore_file):
 def get_checksum(content):
     return hashlib.sha256(content).hexdigest()
 
+def save_snapshot(new_checksum, content, old_checksum, url):
+    snapshot_path = os.path.join("snapshots", f"{new_checksum}.html")
+    with open(snapshot_path, "wb") as f:
+        f.write(content)
+    # Log the change
+    log_path = os.path.join("snapshots", "snapshots.log")
+    with open(log_path, "a") as log_file:
+        log_file.write(f"{old_checksum},{new_checksum},{url}\n")
+
 def main():
     urls = load_urls(PAGES_FILE)
     old_checksums = load_checksums(CHECKSUM_FILE)
     new_checksums = {} 
     changed_urls = []
 
+    os.makedirs("snapshots", exist_ok=True)
+
     for url, ignore_file in urls:
         try:
             resp = requests.get(url, timeout=10)
             resp.raise_for_status()
-            cleaned = clean_html(resp.content)
-            cleaned = remove_ignore_patterns(cleaned, ignore_file)
-            checksum = get_checksum(cleaned)
+            cleaned_content = clean_html(resp.content)
+            cleaned_content = remove_ignore_patterns(cleaned_content, ignore_file)
+            checksum = get_checksum(cleaned_content)
             old_checksum, old_date = old_checksums.get(url, (None, None))
             if old_checksum != checksum:
                 # New page or changed page
                 date = datetime.now().isoformat()
                 changed_urls.append((url, date))
+                if SAVE_SNAPSHOT:
+                    save_snapshot(checksum, cleaned_content, old_checksum, url)
             else:
                 date = old_date
             new_checksums[url] = (checksum, date)
