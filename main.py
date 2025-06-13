@@ -83,6 +83,9 @@ def save_snapshot(new_checksum, cleaned_content, old_checksum, original_content,
         log_file.write(f"{old_checksum},{new_checksum},{url}\n")
 
 def main():
+
+    print("Fetching and processing web pages...")
+
     urls = load_urls(PAGES_FILE)
     old_checksums = load_checksums(CHECKSUM_FILE)
     new_checksums = {} 
