@@ -79,8 +79,9 @@ def save_snapshot(new_checksum, cleaned_content, old_checksum, original_content,
         f.write(original_content)
     # Log the change
     log_path = os.path.join("snapshots", "snapshots.log")
+    timestamp = datetime.now().isoformat()
     with open(log_path, "a") as log_file:
-        log_file.write(f"{old_checksum},{new_checksum},{url}\n")
+        log_file.write(f"[{timestamp}] PREV:{old_checksum} - NEW:{new_checksum} - URL: {url}\n")
 
 def main():
 
